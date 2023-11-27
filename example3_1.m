@@ -19,7 +19,7 @@ l=0.2;
 
 Rset=1:n;
 
-Z=-5:0.01:5;
+Z=-5:0.05:5;
 
 %LMI calculations
 LMIS=[];
@@ -60,47 +60,30 @@ V = @(x1,x2) sum(arrayfun(@(k) [x1;x2]'*h{k}(x1,x2)*P{k}*[x1;x2],G));
 hdot = @(x1,x2,k) sum(arrayfun(@(j) dh{k}(x1,x2)*h{j}(x1,x2)*A{j}*[x1;x2],Rset));
 Dset = @(x1,x2) sum(arrayfun(@(k) [x1;x2]'*hdot(x1,x2,k)*P{k}*[x1;x2],G));
 
-figure; %this is where you obtain the information about b
-fs=fsurf(V);
-title('V(x) along the system trajectories inside Z')
+%calculate V and D
+meshPoints=500;
+tol=10/meshPoints;
+x = linspace(-5,5,meshPoints);
+y = linspace(-5,5,meshPoints);
+[X,Y]=meshgrid(x,y);
+for i=1:length(x)
+    for j = 1:length(y)
+        Ve(i,j) = V(X(i,j),Y(i,j));
+        De(i,j) = Dset(X(i,j),Y(i,j));
+    end
+end
 
-figure; %this is where you obtain the information about l
-fc=fcontour(V);
-fc.LevelList = linspace(0,b,10);
-fc.DisplayName = strcat('V level sets: ',num2str(fc.LevelList));
-hold on;
-fc=fcontour(Dset);
-fc.LineColor='k';
-fc.DisplayName='D';
-fc.LevelList=[0];
-title('V level-sets and D');
-legend;
-colorbar;
-caxis([0,b]);
+%calculate b
+b=min([min(Ve(:,1)), min(Ve(:,end)), min(Ve(1,:)), min(Ve(end,:))])
+b=fix(b*1e2)/1e2;
 
-figure;
-fc=fcontour(V);
-fc.LineColor ='r';
-fc.LineStyle ='--';
-fc.LineWidth = 2;
-fc.DisplayName=num2str(l);
-fc.LevelList=[l];
-
+figure(1);
+[~,c]=contour(X,Y,Ve,linspace(0,b,5),'r','ShowText','on','DisplayName','V')
 hold on
+[~,d]=contour(X,Y,De,[0,fix(max(max(De))*1e2)/1e2],'b','ShowText','on','DisplayName','D')
+legend;
+%from the graph
+l = 0.18;
 
-fc=fcontour(V);
-fc.LineColor ='b';
-fc.LineStyle =':';
-fc.LineWidth = 2;
-fc.DisplayName=num2str(b);
-fc.LevelList=[b];
 
-fc=fcontour(Dset);
-fc.LineColor ='k';
-fc.LineStyle ='-.';
-fc.LineWidth = 2;
-fc.DisplayName = 'SetD';
-fc.LevelList=[0];
 
-hold off
-title('V level-sets and D');
