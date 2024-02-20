@@ -1,7 +1,7 @@
 [**Status:** Archive (code is provided as-is, no updates expected)]: #
-# CNMAC2023
+# CNMAC2023 - branch tcam
 
-This repo contains the code for implementing example 3.1 of paper [*Invariance Principle and the Asymptotic Behavior of T-S Fuzzy Systems*](CNMAC_2023_Fuzzy.pdf).
+This repo contains the code for testing the drone application using LMIs defined in paper [*Invariance Principle and the Asymptotic Behavior of T-S Fuzzy Systems*](CNMAC_2023_Fuzzy.pdf).
 
 ## Contents
 
@@ -9,7 +9,7 @@ This repo contains
 | | |
 |:---|:---:|
 |README.md|This file|
-|example3_1.m|Example 3.1 script|
+|tcamdrone.m|Example 3.1 script|
 |CNMAC_2023_Fuzzy.pdf|Preprint .pdf version of the paper|
 |LICENSE|GNU General Public License v3.0|
 

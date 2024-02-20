@@ -1,60 +1,24 @@
-clear all;
-clc;
-close all;
+%% This sections creates the drone model and calculates the LMI results
+clear all; close all; clc;
+ControlType = 'CNMAC2023';
+Modeltype = 1;
+gamma = [3.8195    0.1614    3.8117    0.3855    1.6844    1.7983    4.4994    2.0476];
+global small_k 
+small_k = 0.1; %gain value of the error dynamic gain
+Saturation = false;
+ControlDesign; 
+% available variables at this point:
+% A = system matrix (drone+controller)
+% B, C = model matrices (drone+controller)
+% G = conjunto G do artigo CNMAC
+% K = ganho do controlador calculado (por uma LMI do mozelli que ja usei
+% antes)
+% P = matrizes da funçao V calculadas na LMI
+% R = matrix auxiliar
+% L = matrix auxiliar
+% h = funcoes de pertinencia do modelo
 
-%system
-A{1}=[-10 30;0 -20];
-A{2}=[-10 -30;0 -20];
-n=2;
-
-h{1} = @(x1,x2) (x1.^2+x2.^2)/50;
-h{2} = @(x1,x2) 1-(x1.^2+x2.^2)/50;
-
-dh{1} = @(x1,x2) [ 2.*x1/50,  2.*x2/50];
-dh{2} = @(x1,x2) [-2.*x1/50, -2.*x2/50];
-
-G=[1];
-b=0.35;
-l=0.2;
-
-Rset=1:n;
-
-Z=-5:0.05:5;
-
-%LMI calculations
-LMIS=[];
-for j=G
-    P{j} = sdpvar(n,n,'symmetric');
-    R{j} = sdpvar(n,n,'full');
-    L{j} = sdpvar(n,n,'full');
-end
-
-for j=Rset
-    for k=G
-        Upsilon{k,j} = [L{k}*A{j}+A{j}'*L{k}',   (P{k}-L{k}'+R{k}*A{j})';
-                        P{k}-L{k}'+R{k}*A{j},        -R{k}-R{k}'];
-        LMIS = [LMIS, Upsilon{k,j} <= 0];
-    end
-end
-
-
-opts=sdpsettings;
-opts.solver='sedumi';
-opts.verbose=0;
-
-sol = solvesdp(LMIS,[],opts);
-p=min(checkset(LMIS));
-if p > 0
-    for k = G
-        P{k} = double(P{k})
-        R{k} = double(R{k})
-        L{k} = double(L{k})
-    end
-else
-    display('Infeasible')
-    P=[];
-end
-
+%% This section was supposed to calculate the sets
 % Set estimation
 V = @(x1,x2) sum(arrayfun(@(k) [x1;x2]'*h{k}(x1,x2)*P{k}*[x1;x2],G));
 hdot = @(x1,x2,k) sum(arrayfun(@(j) dh{k}(x1,x2)*h{j}(x1,x2)*A{j}*[x1;x2],Rset));
